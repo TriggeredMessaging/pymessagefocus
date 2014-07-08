@@ -2,6 +2,8 @@ import xmlrpclib
 import re
 
 class MessageFocusClient(object):
+    version = '1.0.0'
+
     ERROR_CODES = {# MessageFocus undeclared / unpublished fault codes:
                    '200': 'Request could not be processed. %s.',
                    # MessageFocus declared / published fault codes: (reserves the range 100-400)
