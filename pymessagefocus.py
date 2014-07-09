@@ -55,6 +55,7 @@ class MessageFocusClient(object):
                    '4402': 'Invalid list id. %s.',
                    '4403': 'Invalid contact id. %s.',
                    '4404': 'Invalid email address. %s.',
+                   '4499': 'Missing necessary input parameters. %s.',
                        # Action required in MessageFocus
                    '4501': 'Campaign has not been published. %s.',
                        # xmlrpclib errors
@@ -550,7 +551,7 @@ class MessageFocusClient(object):
             return {'success': False, 'results': [self.parse_exception(e)]}
         pass
 
-    def transactional(self, core_table_id, campaign_id, email_address, transaction_data):
+    def transactional(self, core_table_id, campaign_id, contact_id=None, email_address=None, transaction_data={}):
         """
         MessageFocusClient.transactional
         ------------------------------------------------
@@ -569,20 +570,36 @@ class MessageFocusClient(object):
                              MessageFocusClient.get_core_data_for_email_address)]
         }
         ------------------------------------------------
-        @param  core_table_id    int
-        @param  campaign_id      int
-        @param  email_address    str
-        @param  transaction_data dict
-        @return                  dict {
+        @param  core_table_id      int
+        @param  campaign_id        int
+        @param  [contact_id]       int
+        @param  [email_address]    str
+        @param  [transaction_data] dict
+        @return                    dict {
             'success': bool,
             'results': list
         }
         """
-        core_data = self.get_core_data_for_email_address(core_table_id, email_address)
-        if not core_data.get('success'):
-            return core_data
-        try:
+        if (not contact_id) and (not email_address):
+            additional_information = 'Input values: contact id %s %s, email_address %s %s - must provide one'
+            additional_information = additional_information % (contact_id,
+                                                               type(contact_id),
+                                                               email_address,
+                                                               type(email_address))
+            return {'success': False,
+                    'results': [self.error_dictionary(4499, additional_information=additional_information)]}
+
+        if email_address and (not contact_id):
+            core_data = self.get_core_data_for_email_address(core_table_id, email_address)
+            if not core_data.get('success'):
+                return core_data
             contact_id = core_data.get('results')[0].get('id')
+
+        if not isinstance(contact_id, int):
+            additional_information = 'Input value: %s %s' % (contact_id, type(contact_id))
+            return {'success': False,
+                    'results': [self.error_dictionary(4403, additional_information=additional_information)]}
+        try:
             return {'success': True,
                     'results': [{'message': 'Sent',
                                  'value': self._api.contact.transactional(contact_id,
@@ -597,4 +614,5 @@ class MessageFocusClient(object):
             return {'success': False,
                     'results': [self.parse_exception(e, additional_information=additional_information)]}
         pass
+
     pass

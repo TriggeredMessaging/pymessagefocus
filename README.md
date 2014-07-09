@@ -46,16 +46,22 @@ messagefocus.get_core_data_for_contact_id(contact_id)
 
 **Send transactional message**
 
-The person identified by the email address must exist in the core table identified by core_table_id
+The person being sent to must exist in the core table identified by core_table_id and may be identified either by their email address or their contact id. Optionally provide a dictionary of transaction data as a dictionary keyword argument.
 ```python
 core_table_id = 1
 campaign_id = 1
 email_address = 'person@example.com'
-transaction_data = {}
 messagefocus.transactional(core_table_id,
                            campaign_id,
-                           email_addres,
-                           {})
+                           email_address=email_address)
+```
+```python
+core_table_id = 1
+campaign_id = 1
+contact_id = 1
+messagefocus.transactional(core_table_id,
+                           campaign_id,
+                           contact_id=contact_id)
 ```
 ==========
 
