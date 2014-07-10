@@ -1,8 +1,9 @@
 import xmlrpclib
+import version
 import re
 
 class MessageFocusClient(object):
-    version = '1.0.1'
+    version = version.version
 
     ERROR_CODES = {# MessageFocus undeclared / unpublished fault codes:
                    '200': 'Request could not be processed. %s.',
@@ -226,7 +227,7 @@ class MessageFocusClient(object):
     def filter_results(self, results, filter_dictionary):
         """
         MessageFocusClient.filter_results
-        ------------------------------------------------
+null        ------------------------------------------------
         Filter a dictionary by a second dictionary which
         ultimately maps desired keys to a boolean value.
         ------------------------------------------------
