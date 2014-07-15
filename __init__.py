@@ -1,4 +1,4 @@
-from pymessagefocus import MessageFocusClient
+from pymessagefocus import *
 
 __version__ = MessageFocusClient.version
 

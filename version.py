@@ -1,3 +1,3 @@
-version = '1.1.0'
-date = '10 July 2014'
+version = '1.1.1'
+date = '15 July 2014'
 name = 'Lunar Sheriff'

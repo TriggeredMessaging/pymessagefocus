@@ -56,6 +56,7 @@ class MessageFocusClient(object):
                    '4402': 'Invalid list id. %s.',
                    '4403': 'Invalid contact id. %s.',
                    '4404': 'Invalid email address. %s.',
+                   '4405': 'Invalid ftp address. %s.',
                    '4499': 'Missing necessary input parameters. %s.',
                        # Action required in MessageFocus
                    '4501': 'Campaign has not been published. %s.',
@@ -227,7 +228,7 @@ class MessageFocusClient(object):
     def filter_results(self, results, filter_dictionary):
         """
         MessageFocusClient.filter_results
-null        ------------------------------------------------
+        ------------------------------------------------
         Filter a dictionary by a second dictionary which
         ultimately maps desired keys to a boolean value.
         ------------------------------------------------
@@ -382,6 +383,74 @@ null        ------------------------------------------------
             # new one was added. @see(MessageFocusClient._associate_contact_with_list)
             return self._associate_contact_with_list(core_table_result.get('results')[0].get('contact_id'), list_id)
         return core_table_result
+
+    def add_contacts_to_list(self, core_table_id, list_id, data_file_url, csv_column_map, notification_email_address=None):
+        """
+        MessageFocusClient.add_contacts_to_list
+        ------------------------------------------------
+        Request an ftp batched contact upload by passing
+        a data file url and a field mapping dictionary.
+        On success returns a dict like {
+            'success': True,
+            'results': [{'message': 'Import request received.',
+                         'value': 1}]
+        }
+        If an error was encountered it returns a dict s.t. {
+            'success': False,
+            'results': [@see(MessageFocusClient.parse_exception,
+                             MessageFocusClient.error_dictionary)]
+        }
+        ------------------------------------------------
+        @param  core_table_id              int
+        @param  list_id                    int
+        @param  data_file_url              str
+        @param  csv_column_map             dict
+        @param  notification_email_address str
+        @return                            dict {
+            'success': bool,
+            'results': list
+        }
+        """
+
+        if not isinstance(core_table_id, int):
+            additional_information = 'Input value: %s %s' % (core_table_id, type(core_table_id))
+            return {'success': False,
+                    'results': [self.error_dictionary(4401, additional_information=additional_information)]}
+
+        if not isinstance(list_id, int):
+            additional_information = 'Input value: %s %s' % (list_id, type(list_id))
+            return {'success': False,
+                    'results': [self.error_dictionary(4402, additional_information=additional_information)]}
+
+        if not data_file_url.startswith('ftp://'):
+            additional_information = 'Input value: %s %s' % (data_file_url, type(data_file_url))
+            return {'success': False,
+                    'results': [self.error_dictionary(4405, additional_information=additional_information)]}
+
+        options = {'list_id': list_id,
+                   'dedupe_type': 'overwrite',
+                   'field_map': csv_column_map,
+                   'delete_after_import': False}
+
+        if notification_email_address:
+            options['notify_user'] = notification_email_address
+            pass
+        try:
+            result = getattr(self._api.contact, 'import')(core_table_id, data_file_url, options)
+            if result in [1]:
+                return {'success': True,
+                        'results': [{'message': 'Import request received.', 'value': result}]}
+        except Exception as e:
+            field_names = csv_column_map.keys()
+            additional_information = 'Core table id: %s, list id: %s, data file url: %s, attempting to map fields: %s, notifying: %s'
+            additional_information = additional_information % (core_table_id,
+                                                               list_id,
+                                                               data_file_url,
+                                                               field_names,
+                                                               notification_email_address)
+            return {'success': False,
+                    'results': [self.parse_exception(e, additional_information=additional_information)]}
+        pass
 
     def get_core_data_for_contact_id(self, contact_id):
         """
@@ -615,5 +684,4 @@ null        ------------------------------------------------
             return {'success': False,
                     'results': [self.parse_exception(e, additional_information=additional_information)]}
         pass
-
     pass
