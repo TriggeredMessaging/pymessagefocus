@@ -3,4 +3,4 @@ from pymessagefocus import *
 
 setup(name=MessageFocusClient.__module__,
       version=MessageFocusClient.version,
-      py_modules=[MessageFocusClient.__module__, version.__module__])
+      py_modules=[MessageFocusClient.__module__, version.__name__])
