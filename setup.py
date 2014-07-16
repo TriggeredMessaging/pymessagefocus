@@ -1,6 +1,6 @@
 from distutils.core import setup
-from pymessagefocus import *
+import pymessagefocus
 
-setup(name=MessageFocusClient.__module__,
-      version=MessageFocusClient.version,
-      py_modules=[MessageFocusClient.__module__, version.__name__])
+setup(name=pymessagefocus.__name__,
+      version=pymessagefocus.MessageFocusClient.version,
+      packages=[pymessagefocus.__name__])
