@@ -422,7 +422,7 @@ class MessageFocusClient(object):
             return {'success': False,
                     'results': [self.error_dictionary(4402, additional_information=additional_information)]}
 
-        if not data_file_url.startswith('ftp://'):
+        if not 'ftp' in data_file_url:
             additional_information = 'Input value: %s %s' % (data_file_url, type(data_file_url))
             return {'success': False,
                     'results': [self.error_dictionary(4405, additional_information=additional_information)]}
