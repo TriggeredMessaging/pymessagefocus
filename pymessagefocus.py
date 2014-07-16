@@ -342,7 +342,7 @@ class MessageFocusClient(object):
                 else:
                     result = {'message': 'Successfully associated', 'contact_id': contact_id}
                     pass
-                return {'sucess': True, 'results': [result]}
+                return {'success': True, 'results': [result]}
             else:
                 # Unknown error (4096) supply the unrecognised result
                 # as additional information to the error message.
