@@ -2,6 +2,9 @@ import xmlrpclib
 import version
 import re
 
+# See: https://docs.python.org/2/library/xmlrpclib.html
+# See: http://pymotw.com/2/xmlrpclib/
+
 class MessageFocusClient(object):
     version = version.version
 
@@ -79,7 +82,7 @@ class MessageFocusClient(object):
         self._password = password
 
         self._url = 'https://%s.%s:%s@app.adestra.com/api/xmlrpc'
-        self._api = xmlrpclib.ServerProxy(self._url % (organisation, username, password))
+        self._api = xmlrpclib.ServerProxy(self._url % (organisation, username, password), encoding="UTF-8")
         return
 
     def error_dictionary(self, error_code, additional_information=None):
@@ -127,7 +130,9 @@ class MessageFocusClient(object):
             pass
         else:
             error = {'code': exception.__dict__.get('faultCode')}
-            error_string = exception.__dict__.get('faultString', exception.message)
+            error_string = exception.__dict__.get('faultString', '')
+            if not error_string:
+                error_string = unicode(exception)
             pass
 
 
@@ -145,7 +150,7 @@ class MessageFocusClient(object):
         # useful error messages using MessageFocusClient.ErrorParsing
         # regular expressions, the MessageFocusClient.ERROR_CODES
         # dictionary and the additional_information variable from above.
-        if error['code'] == 200:
+        if error.get('code',0) == 200:
             if 'invalid input syntax for integer' in error_string:
                 # An example case where this might crop up is if you manage
                 # to insert a string value where an integer is expected.
@@ -186,7 +191,7 @@ class MessageFocusClient(object):
             pass
 
 
-        if error['code'] == 208:
+        if error.get('code',0) == 208:
             # It would appear MessageFocus throws different faultCodes for
             # essentially the same error depending on the parameter.
             # Let's convert 208 to 207 when object_name=campaign.
@@ -204,7 +209,7 @@ class MessageFocusClient(object):
         # came from xmlrpclib, below we attempt to handle as many of
         # those as possible, falling back to the code for an entirely
         # unknown error (4096).
-        if not error['code']:
+        if not error.get('code',0):
             if 'cannot marshal None' in exception.message:
                 error['code'] = 5102
                 pass
@@ -215,7 +220,7 @@ class MessageFocusClient(object):
 
         error['message'] = MessageFocusClient.ERROR_CODES[str(error['code'])]
 
-        if error['code'] in [200, 4096]:
+        if error.get('code',0) in [200, 4096]:
             additional_information = (error_string)
             pass
 
@@ -297,11 +302,15 @@ class MessageFocusClient(object):
             additional_information = 'Input value: %s %s' % (core_table_id, type(core_table_id))
             return {'success': False,
                     'results': [self.error_dictionary(4401, additional_information=additional_information)]}
+
+        # Clean contact data for passing via XML, including removing None values and substituting for pound characters
+        contact_data = self.clean_contact_data(contact_data)
+
         try:
             return {'success': True, 'results': [{'message': 'Added', 'contact_id': self._api.contact.create(core_table_id, contact_data)}]}
         except Exception as e:
-            additional_information = 'Core table id: %s, contact data: %s' % (core_table_id, contact_data)
-            result = self.parse_exception(e, additional_information=additional_information)
+            additional_information = u'Core table id: %s, contact data: %s' % (core_table_id, contact_data)
+            result = self.parse_exception(e, additional_information=contact_data)
             return {'success': False, 'results': [result]}
         pass
 
@@ -670,6 +679,8 @@ class MessageFocusClient(object):
             return {'success': False,
                     'results': [self.error_dictionary(4403, additional_information=additional_information)]}
         try:
+            # Clean contact data for passing via XML, including removing None values and substituting for pound characters
+            transaction_data = self.clean_contact_data(transaction_data)
             return {'success': True,
                     'results': [{'message': 'Sent',
                                  'value': self._api.contact.transactional(contact_id,
@@ -684,4 +695,29 @@ class MessageFocusClient(object):
             return {'success': False,
                     'results': [self.parse_exception(e, additional_information=additional_information)]}
         pass
-    pass
+
+
+    def clean_contact_data( self, contact_data ):
+        """
+        Clean contact data for passing via XML, including removing None values and substituting for pound characters
+        @param contact_data: dictionary of parameters for MessageFocus
+        @return: Cleaned contact data
+        """
+        # Don't load None field values:
+        clean_contact_data = {}
+        for field_name in contact_data:
+            if contact_data[field_name]:
+                try:
+                    field_value = contact_data[field_name]
+                    if field_value:
+                        if field_value.find(u"\xA3") >= 0: # CB pound currency symbol
+                            field_value = field_value.replace(u"\xA3","&pound;")
+                        clean_contact_data[field_name] = field_value
+                except Exception as e:
+                    pass
+        return clean_contact_data
+
+
+
+
+
