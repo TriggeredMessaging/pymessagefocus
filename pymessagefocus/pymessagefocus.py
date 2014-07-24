@@ -1,6 +1,7 @@
 import xmlrpclib
 import version
 import re
+import six
 
 # See: https://docs.python.org/2/library/xmlrpclib.html
 # See: http://pymotw.com/2/xmlrpclib/
@@ -293,7 +294,7 @@ class MessageFocusClient(object):
                     'results': [self.error_dictionary(4301, additional_information=additional_information)]}
 
         email = contact_data['email']
-        if (not isinstance(email, basestring)) or (not '@' in email) or (not '.' in email):
+        if (not isinstance(email, six.string_types)) or (not '@' in email) or (not '.' in email):
             additional_information = 'Field value: %s %s' % (email, type(email))
             return  {'success': False,
                      'results': [self.error_dictionary(4404, additional_information=additional_information)]}
@@ -531,7 +532,7 @@ class MessageFocusClient(object):
             return {'success': False,
                     'results': [self.error_dictionary(4401, additional_information=additional_information)]}
 
-        if not isinstance(email_address, basestring) or (not '@' in email_address) or (not '.' in email_address):
+        if not isinstance(email_address, six.string_types) or (not '@' in email_address) or (not '.' in email_address):
             additional_information = 'Input value: %s %s' % (email_address, type(email_address))
             return {'success': False,
                     'results': [self.error_dictionary(4404, additional_information=additional_information)]}
@@ -710,7 +711,7 @@ class MessageFocusClient(object):
                 try:
                     field_value = contact_data[field_name]
                     if field_value:
-                        if field_value.find(u"\xA3") >= 0: # CB pound currency symbol
+                        if isinstance(field_value, six.string_types) and field_value.find(u"\xA3") >= 0: #  CB pound currency symbol
                             field_value = field_value.replace(u"\xA3","&pound;")
                         clean_contact_data[field_name] = field_value
                 except Exception as e:
