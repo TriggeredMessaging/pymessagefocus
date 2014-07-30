@@ -1,5 +1,4 @@
 import xmlrpclib
-import version
 import re
 import six
 
@@ -7,7 +6,6 @@ import six
 # See: http://pymotw.com/2/xmlrpclib/
 
 class MessageFocusClient(object):
-    version = version.version
 
     ERROR_CODES = {# MessageFocus undeclared / unpublished fault codes:
                    '200': 'Request could not be processed. %s.',

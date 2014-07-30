@@ -1,6 +1,10 @@
 from distutils.core import setup
-import pymessagefocus
 
-setup(name=pymessagefocus.__name__,
-      version=pymessagefocus.MessageFocusClient.version,
-      packages=[pymessagefocus.__name__])
+setup(name='pymessagefocus',
+      version='1.1.4',
+      author='Triggered Messaging Ltd',
+      author_email='hello@triggeredmessaging.com',
+      license='LICENSE',
+      packages=['pymessagefocus'],
+      install_requires=['six']
+      )
