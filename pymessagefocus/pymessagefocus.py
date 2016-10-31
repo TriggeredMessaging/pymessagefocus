@@ -123,9 +123,9 @@ class MessageFocusClient(object):
         """
         if isinstance(exception, xmlrpclib.ProtocolError):
             error = {'code': 5101}
-            additional_information = 'Organisation: %s, username: %s, password: %s' % (self._organisation,
+            additional_information = 'Organisation: %s, username: %s' % (self._organisation,
                                                                                        self._username,
-                                                                                       self._password)
+                                                                                       )
             pass
         else:
             error = {'code': exception.__dict__.get('faultCode')}
