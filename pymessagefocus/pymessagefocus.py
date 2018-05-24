@@ -550,7 +550,7 @@ class MessageFocusClient(object):
 
     def get_lists_for_contact_id(self, contact_id):
         """
-        MessageFocusClient.get_core_data_for_contact_id
+        MessageFocusClient.get_lists_for_contact_id
         ------------------------------------------------
         Search for a contact in the core tables by contact
         id and return a List of list ids that that contact
