@@ -548,6 +548,89 @@ class MessageFocusClient(object):
                     'results': [self.parse_exception(e, additional_information=additional_information)]}
         pass
 
+    def get_lists_for_contact_id(self, contact_id):
+        """
+        MessageFocusClient.get_lists_for_contact_id
+        ------------------------------------------------
+        Search for a contact in the core tables by contact
+        id and return a List of list ids that that contact
+        is subscribed to.
+        On success returns a dict like {
+            'success': True,
+            'results': [1, 2, 10]
+        }
+        If an error was encountered it returns a dict s.t. {
+            'success': False,
+            'results': [@see(MessageFocusClient.parse_exception,
+                             MessageFocusClient.error_dictionary)]
+        }
+        ------------------------------------------------
+        @param  contact_id int
+        @return            dict {
+            'success': bool,
+            'results': list
+        }
+        """
+        if not isinstance(contact_id, int):
+            additional_information = 'Input value: %s %s' % (contact_id, type(contact_id))
+            return {'success': False,
+                    'results': [self.error_dictionary(4403, additional_information=additional_information)]}
+        try:
+            return {'success': True, 'results': [self._api.contact.lists(contact_id)]}
+        except Exception as e:
+            additional_information = 'Contact id: %s' % contact_id
+            return {'success': False,
+                    'results': [self.parse_exception(e, additional_information=additional_information)]}
+        pass
+
+    def get_lists_for_email_address(self, core_table_id, email_address):
+        """
+        MessageFocusClient.get_lists_for_email_address
+        ------------------------------------------------
+        Search for a contact in the core tables by email
+        and return a List of list ids that that contact
+        is subscribed to.
+        On success returns a dict like {
+            'success': True,
+            'results': [1, 2, 10]
+        }
+        If an error was encountered it returns a dict s.t. {
+            'success': False,
+            'results': [@see(MessageFocusClient.parse_exception,
+                             MessageFocusClient.error_dictionary)]
+        }
+        ------------------------------------------------
+        @param  core_table_id int
+        @param  email_address str
+        @return               dict {
+            'success': bool,
+            'results': list
+        }
+        """
+        if not isinstance(core_table_id, int):
+            additional_information = 'Input value: %s %s' % (core_table_id, type(core_table_id))
+            return {'success': False,
+                    'results': [self.error_dictionary(4401, additional_information=additional_information)]}
+
+        if not isinstance(email_address, six.string_types) or (not '@' in email_address) or (not '.' in email_address):
+            additional_information = 'Input value: %s %s' % (email_address, type(email_address))
+            return {'success': False,
+                    'results': [self.error_dictionary(4404, additional_information=additional_information)]}
+
+        try:
+            result = self._api.contact.search(core_table_id, {'email': email_address})
+            if not len(result):
+                additional_information = 'Email address: %s' % email_address
+                return {'success': False,
+                        'results': [self.error_dictionary(207, additional_information=additional_information)]}
+
+            return {'success': True, 'results': self._api.contact.lists(result[0].get("id"))}
+        except Exception as e:
+            additional_information = 'Core table id: %s, email address: %s' % (core_table_id, email_address)
+            return {'success': False,
+                    'results': [self.parse_exception(e, additional_information=additional_information)]}
+        pass
+
     def get_core_tables(self):
         """
         MessageFocusClient.get_core_tables
