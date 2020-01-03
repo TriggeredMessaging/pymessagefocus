@@ -29,11 +29,13 @@ class MessageFocusClient(object):
                    '210': ("The character encoding for your import data is not "
                            "recognised by MessageFocus."),
                    '211': 'A core table field name is not valid.',
+                   '214': 'Invalid contact email.',
                    '301': 'You must be authenticated to use this resource.',
                    '302': 'You are not authorised to perform that operation.',
                    '303': 'Your account is over quota.',
                    '304': 'Your account is making requests too frequently.',
                    '305': 'Your account is currently disabled.',
+                   '401': 'Authorization failed. Please check your credentials',
                    # XML-RPC defined error codes: (reserves the range -32768 -> -32000)
                    '-32700': 'Parse error. Not well formed.',
                    '-32701': 'Parse error. Unsupported encoding.',
@@ -100,9 +102,12 @@ class MessageFocusClient(object):
             'code':    int
         }
         """
-        error_string = MessageFocusClient.ERROR_CODES[str(error_code)]
-        if additional_information and '%s' in error_string:
-            error_string = error_string % additional_information
+        try:
+            error_string = MessageFocusClient.ERROR_CODES[str(error_code)]
+            if additional_information and '%s' in error_string:
+                error_string = error_string % additional_information
+        except KeyError as e:
+            error_string = 'unknown error code'
         return {'message': error_string, 'code': error_code}
 
     def parse_exception(self, exception, additional_information=None):
@@ -122,7 +127,7 @@ class MessageFocusClient(object):
         }
         """
         if isinstance(exception, xmlrpclib.ProtocolError):
-            error = {'code': 5101}
+            error = {'code': getattr(exception, 'errcode', 5101), 'message': getattr(exception, 'errmsg', None)}
             additional_information = 'Organisation: %s, username: %s' % (self._organisation,
                                                                                        self._username,
                                                                                        )
@@ -131,7 +136,7 @@ class MessageFocusClient(object):
             error = {'code': exception.__dict__.get('faultCode')}
             error_string = exception.__dict__.get('faultString', '')
             if not error_string:
-                error_string = unicode(exception)
+                error_string = six.u(exception)
             pass
 
 
