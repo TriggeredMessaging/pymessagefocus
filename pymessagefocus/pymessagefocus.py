@@ -1,6 +1,7 @@
-import xmlrpclib
 import re
 import six
+import six.moves as sixm
+import xmlrpc.client as xmlrpclib
 
 # See: https://docs.python.org/2/library/xmlrpclib.html
 # See: http://pymotw.com/2/xmlrpclib/
@@ -258,9 +259,9 @@ class MessageFocusClient(object):
 
         def filter_each(r, f, o):
             if isinstance(r, list):
-                o = [filter_each(r[i], f, {}) for i in xrange(len(r))]
+                o = [filter_each(r[i], f, {}) for i in sixm.range(len(r))]
             elif isinstance(r, dict):
-                for k, v in r.iteritems():
+                for k, v in r.items():
                     do_filter(f.get(k), k, v, o)
             return o or r
 
@@ -717,7 +718,7 @@ class MessageFocusClient(object):
             return {'success': False, 'results': [self.parse_exception(e)]}
         pass
 
-    def transactional(self, core_table_id, campaign_id, contact_id=None, email_address=None, transaction_data={}):
+    def transactional(self, core_table_id, campaign_id, contact_id=None, email_address=None, transaction_data={}, launch_reference={}):
         """
         MessageFocusClient.transactional
         ------------------------------------------------
@@ -761,6 +762,18 @@ class MessageFocusClient(object):
                 return core_data
             contact_id = core_data.get('results')[0].get('id')
 
+        if launch_reference:
+            if (isinstance(launch_reference, int) or isinstance(launch_reference, str)):
+                launch_reference = {"launch_reference": launch_reference}
+            else:
+                additional_information = 'Input value: launch_reference should be either int or str, recieved %s %s'
+                additional_information = additional_information % (launch_reference, type(launch_reference))
+                return {
+                    'success':False,
+                    'results':[self.error_dictionary(4403,
+                                                     additional_information=additional_information)]
+                }
+
         if not isinstance(contact_id, int):
             additional_information = 'Input value: %s %s' % (contact_id, type(contact_id))
             return {'success': False,
@@ -768,11 +781,16 @@ class MessageFocusClient(object):
         try:
             # Clean contact data for passing via XML, including removing None values and substituting for pound characters
             transaction_data = self.clean_contact_data(transaction_data)
-            return {'success': True,
-                    'results': [{'message': 'Sent',
-                                 'value': self._api.contact.transactional(contact_id,
-                                                                          campaign_id,
-                                                                          transaction_data)}]}
+            return {
+                'success':True,
+                'results':[{
+                               'message':'Sent',
+                               'value':self._api.contact.transactional(contact_id,
+                                                                       campaign_id,
+                                                                       transaction_data,
+                                                                       launch_reference)
+                           }]
+            }
         except Exception as e:
             additional_information = 'Core table id: %s, campaign id: %s, email_address: %s, transaction data: %s'
             additional_information = additional_information % (core_table_id,
