@@ -1,7 +1,8 @@
 import re
+import xmlrpc.client as xmlrpclib
 
 import six
-import xmlrpclib
+from future.builtins import range
 
 
 # See: https://docs.python.org/2/library/xmlrpclib.html
@@ -260,9 +261,9 @@ class MessageFocusClient(object):
 
         def filter_each(r, f, o):
             if isinstance(r, list):
-                o = [filter_each(r[i], f, {}) for i in xrange(len(r))]
+                o = [filter_each(r[i], f, {}) for i in range(len(r))]
             elif isinstance(r, dict):
-                for k, v in r.iteritems():
+                for k, v in r.items():
                     do_filter(f.get(k), k, v, o)
             return o or r
 
