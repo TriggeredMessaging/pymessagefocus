@@ -6,5 +6,5 @@ setup(name='pymessagefocus',
       author_email='hello@FreshRelevance.com',
       license='LICENSE',
       packages=['pymessagefocus'],
-      install_requires=['six']
+      install_requires=['six', 'future']
       )

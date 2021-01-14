@@ -2,7 +2,8 @@ import re
 import xmlrpc.client as xmlrpclib
 
 import six
-import six.moves as sixm
+from future.builtins import range
+
 
 # See: https://docs.python.org/2/library/xmlrpclib.html
 # See: http://pymotw.com/2/xmlrpclib/
@@ -260,7 +261,7 @@ class MessageFocusClient(object):
 
         def filter_each(r, f, o):
             if isinstance(r, list):
-                o = [filter_each(r[i], f, {}) for i in sixm.range(len(r))]
+                o = [filter_each(r[i], f, {}) for i in range(len(r))]
             elif isinstance(r, dict):
                 for k, v in r.items():
                     do_filter(f.get(k), k, v, o)
