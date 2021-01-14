@@ -1,7 +1,8 @@
 import re
+import xmlrpc.client as xmlrpclib
+
 import six
 import six.moves as sixm
-import xmlrpc.client as xmlrpclib
 
 # See: https://docs.python.org/2/library/xmlrpclib.html
 # See: http://pymotw.com/2/xmlrpclib/
@@ -764,7 +765,7 @@ class MessageFocusClient(object):
 
         if launch_reference:
             if (isinstance(launch_reference, int) or isinstance(launch_reference, str)):
-                launch_reference = {"launch_reference": launch_reference}
+                launch_reference = {"launch_reference":launch_reference}
             else:
                 additional_information = 'Input value: launch_reference should be either int or str, recieved %s %s'
                 additional_information = additional_information % (launch_reference, type(launch_reference))
