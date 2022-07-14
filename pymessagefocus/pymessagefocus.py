@@ -33,6 +33,7 @@ class MessageFocusClient(object):
                            "recognised by MessageFocus."),
                    '211': 'A core table field name is not valid.',
                    '214': 'Invalid contact email.',
+                   '216': 'Campaign has not been published.',
                    '301': 'You must be authenticated to use this resource.',
                    '302': 'You are not authorised to perform that operation.',
                    '303': 'Your account is over quota.',
