@@ -85,7 +85,7 @@ class MessageFocusClient(object):
         self._username = username
         self._password = password
 
-        self._url = 'https://%s.%s:%s@app.adestra.com/api/xmlrpc'
+        self._url = 'https://%s.%s:%s@api-ssl-beta.adestra.com/api/xmlrpc'
         self._api = xmlrpclib.ServerProxy(self._url % (organisation, username, password), encoding="UTF-8")
         return
 
