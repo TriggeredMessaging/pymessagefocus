@@ -218,7 +218,7 @@ class MessageFocusClient(object):
         # those as possible, falling back to the code for an entirely
         # unknown error (4096).
         if not error.get('code',0):
-            if 'cannot marshal None' in exception.message:
+            if 'cannot marshal None' in str(exception):
                 error['code'] = 5102
                 pass
             else:
