@@ -114,7 +114,7 @@ class MessageFocusClient(object):
             error_string = 'unknown error code'
         return {'message': error_string, 'code': error_code}
 
-    def parse_exception(self, exception, additional_information=None):
+    def parse_exception(self, exception, additional_information=None, request_xml=None):
         """
         MessageFocusClient.parse_exception
         ------------------------------------------------
@@ -236,6 +236,9 @@ class MessageFocusClient(object):
             error['message'] = error['message'] % additional_information
             pass
 
+        if request_xml:
+            error['request_xml'] = request_xml
+
         return error
 
     def filter_results(self, results, filter_dictionary):
@@ -318,7 +321,7 @@ class MessageFocusClient(object):
             return {'success': True, 'results': [{'message': 'Added', 'contact_id': self._api.contact.create(core_table_id, contact_data)}]}
         except Exception as e:
             additional_information = u'Core table id: %s, contact data: %s' % (core_table_id, contact_data)
-            result = self.parse_exception(e, additional_information=contact_data)
+            result = self.parse_exception(e, additional_information=contact_data, request_xml=xmlrpclib.dumps((core_table_id, contact_data), "contact.create"))
             return {'success': False, 'results': [result]}
         pass
 
@@ -351,7 +354,7 @@ class MessageFocusClient(object):
             # The below call should return 0 or 1 for success
             # and raise an exception otherwise.
             # Any other return value is an unexpected error.
-            result = self._api.contact.addList(contact_id, list_id)
+            result = self._api.contact.addList(contact_id, str(list_id))
             if result in [0, 1]:
                 if not result:
                     result = {'message': 'Already associated', 'contact_id': contact_id}
@@ -367,7 +370,7 @@ class MessageFocusClient(object):
                         'results': [self.error_dictionary(4096, additional_information=result)]}
         except Exception as e:
             additional_information = 'Contact id: %s, list id: %s' % (contact_id, list_id)
-            result = self.parse_exception(e, additional_information=additional_information)
+            result = self.parse_exception(e, additional_information=additional_information, request_xml=xmlrpclib.dumps((contact_id, list_id), "contact.addList"))
             return {'success': False, 'results': [result]}
         pass
 
