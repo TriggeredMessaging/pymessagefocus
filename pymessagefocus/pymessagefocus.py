@@ -318,7 +318,9 @@ class MessageFocusClient(object):
         contact_data = self.clean_contact_data(contact_data)
 
         try:
-            return {'success': True, 'results': [{'message': 'Added', 'contact_id': self._api.contact.create(core_table_id, contact_data)}]}
+            request_xml = xmlrpclib.dumps((core_table_id, contact_data), "contact.create")
+            return {'success': True, 'results': [{'message': 'Added', 'contact_id': self._api.contact.create(core_table_id, contact_data)}],
+                    'request_xml': request_xml}
         except Exception as e:
             additional_information = u'Core table id: %s, contact data: %s' % (core_table_id, contact_data)
             result = self.parse_exception(e, additional_information=contact_data, request_xml=xmlrpclib.dumps((core_table_id, contact_data), "contact.create"))
@@ -401,7 +403,12 @@ class MessageFocusClient(object):
             # The below call will return success with different string values in the
             # results list depending on if there already was an association or if a
             # new one was added. @see(MessageFocusClient._associate_contact_with_list)
-            return self._associate_contact_with_list(core_table_result.get('results')[0].get('contact_id'), list_id)
+            dict_result = self._associate_contact_with_list(core_table_result.get('results')[0].get('contact_id'), list_id)
+
+            if core_table_result.get("request_xml"):
+                dict_result['request_xml'] = core_table_result.get("request_xml")
+
+            return dict_result
         return core_table_result
 
     def add_contacts_to_list(self, core_table_id, list_id, data_file_url, csv_column_map, notification_email_address=None):
